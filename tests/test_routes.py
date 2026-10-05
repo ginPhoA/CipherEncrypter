@@ -56,11 +56,20 @@ def test_algorithms_marks_aes_and_rsa_active(client):
     assert algorithms[1]["supports"] == ["rsa-2048-oaep-small-files"]
 
 
-def test_encrypt_and_decrypt_image_round_trip(client):
+@pytest.mark.parametrize(
+    ("contents", "filename"),
+    [
+        (PNG_SAMPLE, "photo.png"),
+        ("CipherForge route text — café".encode(), "notes.txt"),
+        (bytes(range(256)), "sample.bin"),
+    ],
+)
+def test_encrypt_and_decrypt_file_round_trip(client, contents, filename):
+    filename_stem, filename_extension = filename.rsplit(".", 1)
     encrypted = client.post(
         "/api/encrypt",
         data={
-            "file": (io.BytesIO(PNG_SAMPLE), "photo.png"),
+            "file": (io.BytesIO(contents), filename),
             "algorithm": "aes-cbc",
             "password": PASSCODE,
             "password_confirmation": PASSCODE,
@@ -69,13 +78,13 @@ def test_encrypt_and_decrypt_image_round_trip(client):
     )
 
     assert encrypted.status_code == 200
-    assert encrypted.headers["X-Download-Filename"] == "photo.encrypt.aescbc"
+    assert encrypted.headers["X-Download-Filename"] == f"{filename_stem}.encrypt.aescbc"
     assert encrypted.headers["Cache-Control"] == "no-store, max-age=0"
 
     decrypted = client.post(
         "/api/decrypt",
         data={
-            "file": (io.BytesIO(encrypted.data), "photo.encrypt.aescbc"),
+            "file": (io.BytesIO(encrypted.data), f"{filename_stem}.encrypt.aescbc"),
             "algorithm": "aes-cbc",
             "password": PASSCODE,
         },
@@ -83,8 +92,10 @@ def test_encrypt_and_decrypt_image_round_trip(client):
     )
 
     assert decrypted.status_code == 200
-    assert decrypted.headers["X-Download-Filename"] == "photo.decrypt.png"
-    assert decrypted.data == PNG_SAMPLE
+    assert (
+        decrypted.headers["X-Download-Filename"] == f"{filename_stem}.decrypt.{filename_extension}"
+    )
+    assert decrypted.data == contents
 
 
 def test_encrypt_requires_file_password_and_matching_confirmation(client):
