@@ -41,3 +41,6 @@ temp/
 Thumbs.db
 .idea/
 .vscode/
+
+# Other files
+.ProjectStructure.md

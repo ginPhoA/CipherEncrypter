@@ -1,511 +1,217 @@
 # CipherForge
 
-## Repository status
+CipherForge is a small website that runs on your computer and demonstrates how
+file encryption works. Choose a file, encrypt it with AES-CBC or RSA, then use
+the matching passcode or key to recover it.
 
-The interactive frontend and local Flask workflows for AES-CBC and direct RSA
-are implemented. The substitution cipher and public hosting remain later work.
+> **For education only.** CipherForge is a learning demo, not secure file
+> storage. Use sample files only; never use confidential, sensitive, or
+> irreplaceable files. The app has no professional key management, identity
+> verification, user authentication, or cloud storage.
 
-The development configuration provides a repeatable local setup, test
-configuration, linting rules, and safeguards against committing cryptographic
-material or runtime uploads. No generated keys, passwords, uploaded files,
-encrypted packages, or decrypted files belong in this repository.
+## What it does
 
-## Local development setup
+- Encrypts and decrypts text and binary files with AES-CBC.
+- Demonstrates RSA public and private keys with very small files.
+- Generates downloadable RSA key pairs and accepts PEM key files.
+- Runs a local Flask server and a single-page HTML/CSS/JavaScript interface.
+- Returns the processed file as a download. CipherForge does not keep files or
+  keys between requests.
 
-CipherForge targets Python 3.11 or later. Create an isolated environment and
-install the development dependencies before beginning implementation:
+You do not need Node.js or a frontend build step. Python and the packages in
+`requirements.txt` are enough to run the app.
 
-```bash
+## Encryption in plain language
+
+Encryption scrambles file contents so they can only be recovered using the
+right secret. The scrambled result is called **ciphertext**. Decryption changes
+it back into the original file.
+
+### AES-CBC: one passcode for a file
+
+AES-CBC uses the same passcode for encryption and decryption. CipherForge uses
+PBKDF2 to derive encryption keys from the passcode, AES-256-CBC to encrypt the
+file, and a separate HMAC check to detect changes to the encrypted package. A
+random salt helps derive a unique key, and a fresh initialization vector (IV)
+starts each encryption with a different value. The passcode is never included
+in the download, so keep it safe. The package also contains the original
+filename and file type.
+
+AES-CBC is included to teach encryption concepts. It is not a modern default for
+new systems. The source file limit is 20 MiB. Encrypted files use the
+`.aescbc` extension; decrypted downloads include `.decrypt` before the original
+file extension.
+
+### RSA: a public key and a private key
+
+RSA uses a key pair. The **public key** encrypts a file, and the matching
+**private key** decrypts it. You can share the public key; keep the private key
+safe. CipherForge generates RSA-2048 keys and uses RSA-OAEP with SHA-256.
+Keys are downloaded as `.pem` files, a standard text format for cryptographic
+keys.
+
+This version encrypts file contents directly with RSA, so it accepts at most
+190 bytes per file. Most photos and ordinary documents are too large. RSA is
+included here to demonstrate public-key encryption, not as a general-purpose
+file cipher. RSA downloads use `.rsaenc`. The package includes the original
+filename and file type as readable metadata; those details are not encrypted.
+
+## Run CipherForge locally
+
+### Requirements
+
+- Python 3.11 or later.
+- A terminal: Terminal on macOS, or PowerShell/Windows Terminal on Windows.
+- Internet access while installing the Python packages.
+- A modern browser such as Chrome, Edge, Firefox, or Safari.
+
+The page and encryption server run on the same computer. The app binds to
+`127.0.0.1` so other computers on your network cannot connect to it.
+
+### macOS
+
+Open Terminal, change to the folder containing CipherForge, then run:
+
+```sh
+python3 --version
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements.txt
+python run.py
 ```
 
-During implementation, use these checks before considering a change ready:
+Open <http://127.0.0.1:5000> in your browser. Leave the Terminal window open
+while using the app. Press **Ctrl+C** in that window when you are finished.
 
-```bash
+### Windows
+
+Open PowerShell or Windows Terminal, change to the folder containing
+CipherForge, then run:
+
+```powershell
+py -3.11 --version
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe run.py
+```
+
+Open <http://127.0.0.1:5000> in your browser. Leave the terminal window open
+while using the app. Press **Ctrl+C** there to stop the server.
+
+If Windows cannot find `py`, install Python 3.11 or later, then open a new
+terminal and try again.
+
+### If port 5000 is already in use
+
+Start the app on another local port:
+
+macOS:
+
+```sh
+PORT=5050 python run.py
+```
+
+Windows PowerShell:
+
+```powershell
+$env:PORT = "5050"
+.\.venv\Scripts\python.exe run.py
+```
+
+Then open <http://127.0.0.1:5050>.
+
+## Try a round trip
+
+Use disposable, non-sensitive sample files: one small text file and one small
+binary file. The RSA example must be no larger than 190 bytes.
+
+### AES-CBC
+
+1. Read the warning on the page, then choose **Encrypt** and **AES-CBC**.
+2. Select a file, enter a passcode, confirm it, and choose **Encrypt file**.
+3. Download the `.aescbc` file. Switch to **Decrypt**, select that package, and
+   enter the same passcode.
+4. Download the recovered file. Repeat with a small binary file to see that
+   binary contents are supported too.
+
+### RSA
+
+1. Choose **RSA**, then generate a key-pair ZIP. A passphrase for the private
+   key is optional. Extract the downloaded ZIP and keep the private key safe.
+2. Choose a file no larger than 190 bytes, select the public PEM, and encrypt it.
+3. Switch to **Decrypt**, select the `.rsaenc` file and its matching private
+   PEM, enter the private-key passphrase if you set one, and decrypt.
+
+## Project layout
+
+```text
+CipherForge/
+├── app/
+│   ├── __init__.py          Creates the Flask app and registers routes
+│   ├── constants.py         File and key size limits
+│   ├── routes.py            Page, key-generation, encrypt, and decrypt endpoints
+│   ├── validators.py        Upload, passcode, and key validation
+│   ├── storage.py           Bounded upload reading
+│   └── services/
+│       ├── aes_cbc_service.py  AES-CBC package creation and recovery
+│       └── rsa_service.py      RSA key, package, and recovery functions
+├── static/
+│   ├── css/styles.css       Page styling and responsive layout
+│   └── js/app.js            Form behavior and local API requests
+├── templates/index.html     The single-page interface
+├── tests/
+│   ├── test_aes_cbc_service.py
+│   ├── test_rsa_service.py
+│   └── test_routes.py       API and download behavior tests
+├── instance/                Flask instance folder; runtime files are ignored
+├── .github/workflows/       Automated repository checks
+├── requirements.txt         Packages needed to run the app
+├── requirements-dev.txt     Extra packages for tests and lint checks
+├── pyproject.toml           Python and test/lint configuration
+├── LICENSE                  Project license
+├── .gitignore               Keeps local environments and key files out of Git
+├── .github/workflows/
+│   └── actions.yml          Automated repository checks
+├── run.py                   Starts the local server
+├── ProjectStructure.md      Archive of the previous detailed README
+└── README.md                Project overview and setup guide
+```
+
+The backend code in `app/` validates uploaded files and keys, performs the
+encryption or decryption, then sends a download to the browser. The HTML page is
+in `templates/`; its CSS and JavaScript are in `static/`.
+
+## Developer checks
+
+To run the tests and code checks, install the development dependencies. On
+macOS, activate `.venv` first if you opened a new terminal.
+
+macOS:
+
+```sh
+python -m pip install -r requirements-dev.txt
 python -m pytest
 python -m ruff check .
 python -m ruff format --check .
 ```
 
-Start the application locally with:
+Windows PowerShell:
 
-```bash
-python run.py
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m ruff check .
+.\.venv\Scripts\python.exe -m ruff format --check .
 ```
 
-Then open <http://127.0.0.1:5000>. The server binds only to `127.0.0.1`.
-
-## Static frontend preview
-
-Open `templates/index.html` directly in a browser to preview the interface.
-Operation switching, file selection, drag-and-drop, and client-side validation
-work without a server. Encryption and decryption require the Flask server; when
-the page is opened directly, submitting explains how to start it.
-
-## Development plan
-
-CipherForge is a small local webpage for demonstrating file encryption with two cryptographic algorithms:
-
-1. RSA
-2. AES-CBC
-
-The first version should be achievable in approximately one to three focused days. The application will run locally first. A future public deployment may be considered after the local workflow is stable and has been reviewed.
-
-`Crypt_Algorithm` is a separate reference repository. It is not the main project and must not be changed as part of CipherForge development. Its Python exercises provide context for how the RSA and AES-CBC backend services may be structured.
-
-## Educational-purpose rule
-
-All of CipherForge is for educational purposes only.
-
-The project must display this disclaimer clearly in the webpage and documentation. It must explain that:
-
-- The application is a learning and demonstration tool, not a secure file-storage service.
-- Users must not upload confidential, sensitive, or irreplaceable files.
-- The AES-CBC workflow is included to demonstrate cryptographic concepts and should not be treated as a modern default for new systems.
-- RSA has strict message-size limits and is not a general-purpose large-file cipher when used directly.
-- The application does not provide professional key management, identity verification, authentication, or secure cloud storage.
-- The future substitution cipher is intentionally weak and will also be educational only.
-
-The project may be presented on a resume or LinkedIn as an educational cryptography and web-development demonstration, but it must not imply that it is suitable for protecting real-world secrets.
-
-## Scope and priorities
-
-### First release: required
-
-- Local Flask/Python web server.
-- Single-page HTML/CSS/JavaScript interface.
-- Encrypt and decrypt operation selection.
-- RSA option with key generation, key import, encryption, and decryption.
-- AES-CBC option with password-based encryption and decryption.
-- File upload and download handling.
-- Validation and clear user-facing errors.
-- Basic automated tests for both algorithms.
-- A visible educational disclaimer.
-
-### Later addition: substitution cipher
-
-The substitution cipher should be added only after the RSA and AES-CBC workflows, tests, and interface are complete. It should be treated as a separate educational feature rather than a requirement for the first release.
-
-The later substitution feature can be limited to UTF-8 text files and use a 26-letter substitution key. It should not delay the first working version.
-
-### Out of scope for the first release
-
-- User accounts or multi-user access control.
-- Database or cloud storage.
-- Public hosting.
-- Sharing links.
-- Permanent server-side key storage.
-- Large-file streaming or resumable uploads.
-- Digital signatures, certificates, or key revocation.
-- A custom implementation of RSA mathematics or AES.
-- A claim that the application provides production-grade security.
-
-## Recommended technology stack
-
-### Frontend
-
-- HTML for the page structure and forms.
-- CSS for a small responsive interface, algorithm cards, status messages, and the disclaimer banner.
-- Vanilla JavaScript for operation switching, algorithm selection, drag-and-drop, conditional fields, form submission, status updates, and downloads.
-
-### Backend
-
-- Python 3.
-- Flask for the local server and HTTP endpoints.
-- `cryptography` for RSA key generation, RSA-OAEP, AES-CBC, PKCS7 padding, HMAC, and key serialization.
-- Python standard library modules such as `tempfile`, `pathlib`, `secrets`, `hashlib`, and `mimetypes` for temporary files, random values, metadata, and file handling.
-- Pytest for algorithm and route tests.
-
-The browser should not implement the cryptographic operations in the first version. It should send a local request to the Python backend, which performs validation and encryption or decryption before returning a downloadable result.
-
-## Algorithm design
-
-### Option 1: RSA
-
-The RSA option is primarily for demonstrating public-key encryption, key pairs, OAEP padding, and the difference between public and private keys.
-
-Recommended MVP design:
-
-- Generate RSA-2048 key pairs using the cryptography library.
-- Use public exponent 65537.
-- Use RSA-OAEP with MGF1-SHA256 and SHA-256.
-- Encrypt with the public key.
-- Decrypt with the matching private key.
-- Export keys as PEM files.
-- Optionally protect exported private keys with a user-provided passphrase.
-- Apply a strict plaintext size limit because direct RSA cannot encrypt arbitrary-sized files.
-
-CipherForge generates and imports **RSA-2048** keys with public exponent
-65537 only. Imported keys with another size, another key type, or a different
-public exponent are rejected. The application uses the actual accepted key
-size and the OAEP hash length to derive the maximum plaintext length:
-`ceil(key_size / 8) - (2 * SHA-256_digest_length) - 2`. For RSA-2048 with
-SHA-256 this is **190 bytes**.
-
-Generated public keys are PEM SubjectPublicKeyInfo files. Generated private
-keys are PKCS#8 PEM files: when a non-empty passphrase is supplied, the
-application uses `BestAvailableEncryption`; otherwise it uses `NoEncryption`.
-Both forms can be imported. An encrypted private key requires its passphrase
-to decrypt; an unencrypted key does not.
-
-The interface should clearly state that the direct RSA option is intended for small demonstration files. The backend must reject data that is too large rather than silently truncating or attempting unsafe chunking.
-
-RSA ciphertext is returned in a versioned UTF-8 JSON `.rsaenc` envelope. The
-envelope records the fixed algorithm identifier, key size, sanitized original
-filename, MIME type, and Base64-encoded RSA ciphertext. Filename and MIME
-metadata are not encrypted or authenticated by direct RSA; they are strictly
-validated and the filename is sanitized again before download. The encrypted
-download uses `<filename-stem>.encrypt.rsaenc`; a recovered file uses
-`<original-stem>.decrypt<extension>`.
-
-If the project later needs to support larger files under an RSA-labelled workflow, the next design should be a hybrid envelope: AES encrypts the file and RSA encrypts the AES key. That is a future enhancement and should not be confused with direct RSA encryption in the first release.
-
-The existing `Crypt_Algorithm/Crypt-Techniques/task3-rsa.py` demonstrates RSA-OAEP, signatures, RSA key generation, and PEM serialization. It should be used as reference only. The webpage should not copy its import-time execution, unencrypted private-key output, or 1024-bit demonstration path.
-
-### Option 2: AES-CBC
-
-The AES-CBC option is for demonstrating symmetric encryption, password-derived keys, initialization vectors, padding, and file decryption with the same password.
-
-Recommended MVP design:
-
-- Ask the user for a password during encryption and decryption.
-- Generate a random salt for every encryption operation.
-- Derive separate encryption and authentication keys with PBKDF2-HMAC-SHA256.
-- Use AES-256-CBC for the file bytes.
-- Generate a fresh random 16-byte IV for every encryption operation.
-- Apply PKCS7 padding before encryption and remove it after decryption.
-- Use Encrypt-then-MAC with HMAC-SHA256 over the format metadata, salt, IV, and ciphertext.
-- Derive 64 bytes with PBKDF2-HMAC-SHA256 using 600,000 iterations, then split them into separate 32-byte encryption and authentication keys.
-- Verify the HMAC before attempting to unpad or return plaintext.
-- Store the salt, IV, algorithm identifier, format version, original filename, and HMAC alongside the ciphertext in an `.aescbc` package.
-
-The package is UTF-8 JSON with Base64-encoded salt, IV, ciphertext, and HMAC.
-Its authenticated manifest also records the KDF and iteration count, original
-filename, and MIME type. The password is never included. The encrypted
-download uses `<filename-stem>.encrypt.aescbc`; a decrypted file uses
-`<original-stem>.decrypt<extension>`.
-
-The HMAC is important because AES-CBC by itself does not authenticate the ciphertext. The design still uses AES-CBC as requested, while preventing the MVP from treating unauthenticated CBC as a complete file-protection design.
-
-The old `task1-aes-cbc.py` and `task2-aes-cbc.py` exercises provide useful context for AES-CBC, IV handling, and PKCS7 padding. Their hard-coded password, plaintext key file, and unauthenticated CBC workflow must not be copied into the webpage.
-
-## User process
-
-### RSA encryption
-
-1. The user opens the local webpage and reads the educational disclaimer.
-2. The user selects **Encrypt**.
-3. The user selects **RSA**.
-4. The user selects a small file.
-5. The user uploads an existing RSA public key or generates a new RSA key pair.
-6. If a new pair is generated, the user downloads the public and private key files and keeps the private key safe for the demonstration.
-7. The user submits the form.
-8. The backend validates the key and RSA size limit, encrypts the file, and returns a download.
-
-### RSA decryption
-
-1. The user selects **Decrypt** and **RSA**.
-2. The user uploads the RSA-encrypted file.
-3. The user uploads the matching private key and enters its passphrase if required.
-4. The backend validates the key and decrypts the file.
-5. The original file is returned as a download if decryption succeeds.
-
-### AES-CBC encryption
-
-1. The user selects **Encrypt**.
-2. The user selects **AES-CBC**.
-3. The user selects a file.
-4. The user chooses a passcode and confirms it.
-5. The local backend generates a salt and IV, derives the keys, encrypts the file, authenticates the package, and returns an `.aescbc` download.
-
-### AES-CBC decryption
-
-1. The user selects **Decrypt** and **AES-CBC**.
-2. The user uploads an `.aescbc` file.
-3. The user enters the same passcode used during encryption.
-4. The backend verifies the HMAC before decrypting and unpadding.
-5. The original file is returned only if authentication and decryption succeed.
-
-## Page and interface plan
-
-The first release can use one page with a small amount of JavaScript state:
-
-- Header: CipherForge name and short project description.
-- Warning panel: prominent educational-only disclaimer.
-- Operation control: Encrypt or Decrypt.
-- Algorithm control: RSA or AES-CBC.
-- File drop zone: selected filename, size, and basic type information.
-- Dynamic key area:
-  - RSA public/private key upload and key-generation controls.
-  - AES-CBC password and confirmation fields.
-- Submit button whose label changes to match the selected operation.
-- Status area for validation, processing, success, and error states.
-- Result area containing the download action and a reminder about required keys or passwords.
-
-The page should not display plaintext or ciphertext unnecessarily. A visual explanation of the algorithm steps can be added later as an educational enhancement.
-
-## API outline
-
-These examples describe the API contract, not implementation code. All endpoints are local-only in the first version.
-
-### `GET /api/algorithms`
-
-Returns the currently available algorithms.
-
-Example response shape:
-
-```json
-{
-  "algorithms": [
-    {
-      "id": "aes-cbc",
-      "label": "AES-CBC",
-      "supports": ["files-within-upload-limit"],
-      "educational_warning": "AES-CBC is included for educational purposes."
-    },
-    {
-      "id": "rsa",
-      "label": "RSA",
-      "status": "active",
-      "supports": ["rsa-2048-oaep-small-files"],
-      "educational_warning": "Direct RSA is for very small demonstration files only. RSA-2048 with OAEP-SHA256 accepts at most 190 bytes."
-    }
-  ]
-}
-```
-
-### `POST /api/keys/rsa`
-
-Generates an RSA key pair for local demonstration use.
-
-Request fields:
-
-- `key_size`: optional; if supplied, it must be `2048`.
-- `passphrase`: optional non-empty passphrase used to protect the private-key export.
-- `passphrase_confirmation`: matches `passphrase` when a passphrase is used.
-
-Response behavior:
-
-- Return an in-memory ZIP download named `cipherforge-rsa-2048-key-pair.zip`.
-  It contains `cipherforge-rsa-2048-public.pem` and
-  `cipherforge-rsa-2048-private.pem`.
-- Do not write private keys to the repository.
-- Do not log key contents or passphrases.
-
-### `POST /api/encrypt`
-
-Multipart form fields:
-
-- `file`: source file.
-- `algorithm`: `aes-cbc` or `rsa`.
-- `password`: required for AES-CBC.
-- `password_confirmation`: required by the frontend for AES-CBC encryption.
-- `rsa_public_key`: required for RSA encryption; an RSA-2048 public PEM with
-  public exponent 65537.
-
-Success behavior:
-
-- AES-CBC returns `<filename-stem>.encrypt.aescbc`.
-- RSA returns `<filename-stem>.encrypt.rsaenc`. RSA plaintext must not exceed
-  the OAEP limit derived from the accepted RSA-2048 key (190 bytes today).
-- Do not include plaintext, passwords, or private keys in the response body or logs.
-
-### `POST /api/decrypt`
-
-Multipart form fields:
-
-- `file`: encrypted input file.
-- `algorithm`: `aes-cbc` or `rsa`.
-- `password`: required for AES-CBC.
-- `rsa_private_key`: required for RSA decryption; the matching RSA-2048 private
-  PEM.
-- `rsa_passphrase`: optional; required only when the imported private PEM is
-  encrypted.
-
-Success behavior:
-
-- Return the recovered file as an attachment named `<original-stem>.decrypt<extension>`.
-- Restore the original filename only after sanitizing it and preventing path traversal.
-- RSA malformed envelopes, wrong private keys, and incorrect private-key
-  passphrases all return the same generic decryption error.
-
-### Error response shape
-
-All validation and operation errors should use a consistent JSON shape, for example:
-
-```json
-{
-  "error": {
-    "code": "FILE_TOO_LARGE",
-    "message": "The selected file exceeds the upload limit."
-  }
-}
-```
-
-Authentication failures, incorrect passwords, malformed packages, and wrong RSA keys should return a generic decryption error without exposing sensitive diagnostic details.
-
-## Project structure
-
-```text
-CipherForge/
-├── README.md
-├── LICENSE
-├── requirements.txt
-├── run.py
-├── app/
-│   ├── __init__.py
-│   ├── constants.py
-│   ├── routes.py
-│   ├── validators.py
-│   ├── storage.py
-│   └── services/
-│       └── aes_cbc_service.py
-│       └── rsa_service.py
-├── templates/
-│   └── index.html
-├── static/
-│   ├── css/
-│   │   └── styles.css
-│   └── js/
-│       └── app.js
-├── tests/
-│   ├── test_aes_cbc_service.py
-│   └── test_routes.py
-└── instance/
-    └── .gitkeep
-```
-
-`instance/` is ignored by Git. Upload streams are owned by Flask/Werkzeug and
-closed at the end of each request. Encryption keys, plaintext, and response
-packages stay in memory; the application does not create persistent temporary
-files or retain passcodes.
-
-## Validation and safety requirements
-
-- Bind the local server to `127.0.0.1`, not all network interfaces.
-- Limit source files to 20 MiB and allow request overhead for the Base64-encoded `.aescbc` package during decryption.
-- Enforce the RSA-specific plaintext limit from the actual accepted key size
-  and OAEP hash (190 bytes for the RSA-2048/SHA-256 configuration).
-- Sanitize filenames and never treat an uploaded filename as a filesystem path.
-- Reject empty files if the selected operation cannot meaningfully process them.
-- Validate RSA key type, serialization, key size, and passphrase before processing.
-- Validate AES-CBC package version, salt, IV, ciphertext length, and HMAC before decryption.
-- Use a cryptographically secure random source for RSA keys, salts, IVs, and other random values.
-- Never use hard-coded passwords or keys from the reference exercises.
-- Never use textbook RSA or manually implemented RSA mathematics in the webpage.
-- Never return plaintext, passwords, keys, or decrypted data in logs.
-- Close request-scoped upload streams after successful and failed requests; do not persist uploads, plaintext, keys, or packages.
-- Show the educational disclaimer before the user selects a file.
-- Explain that the local MVP is not designed for large files or sensitive information.
-
-## Delivery sequence for a 1–3 day build
-
-### Day 1: local skeleton and AES-CBC workflow — complete
-
-- Create the Flask app and single-page layout.
-- Add the disclaimer, operation switch, and algorithm selection.
-- Add upload validation and temporary-file handling.
-- Implement AES-CBC encryption, PBKDF2 key derivation, PKCS7 padding, and HMAC verification.
-- Add the AES-CBC API route and service tests.
-
-### Day 2: RSA workflow — complete
-
-- RSA-2048 key-pair generation, ZIP export, PEM import, and optional
-  passphrase-protected PKCS#8 private PEMs.
-- RSA-OAEP encryption and decryption with MGF1-SHA256, SHA-256, and a strict
-  190-byte direct-RSA limit.
-- RSA frontend controls for generated/imported public keys, private keys, and
-  optional private-key passphrases.
-- RSA service and route tests for PEM round trips, text/binary files, wrong
-  keys, malformed input, and oversized files.
-
-### Day 3: polish and demonstration readiness
-
-- Improve error messages, download names, and status states.
-- Add responsive styling and short algorithm explanations.
-- Test binary and text files through both workflows.
-- Run the full test suite and manually verify the browser process.
-- Document local setup and a short demonstration script.
-- Prepare screenshots or a short local demo recording for future portfolio use.
-
-The core success criterion is a reliable local encrypt/decrypt round trip for
-RSA and AES-CBC, with the educational warning always visible. Direct RSA
-remains a small-file learning feature, not a production file-encryption design.
-
-## Testing checklist
-
-### RSA
-
-- Generate a key pair and successfully import the resulting files.
-- Encrypt and decrypt a small text file.
-- Encrypt and decrypt a small binary file.
-- Confirm that decrypted bytes exactly match the original bytes.
-- Reject data above the direct RSA size limit.
-- Reject a wrong private key.
-- Reject malformed RSA-encrypted input.
-- Confirm that private keys, plaintext, and passphrases are absent from logs.
-- Confirm the generated private PEM loads with its optional passphrase and that
-  the generated ZIP contains both PEM files.
-
-### AES-CBC
-
-- Encrypt and decrypt a text file with the same password.
-- Encrypt and decrypt a binary file within the upload limit.
-- Confirm that decrypted bytes exactly match the original bytes.
-- Confirm that different encryptions use different salts and IVs.
-- Reject an incorrect password.
-- Reject modified ciphertext or metadata through HMAC verification.
-- Reject invalid padding and malformed package structures.
-- Confirm that passwords and plaintext are absent from logs.
-
-### Web interface
-
-- Confirm that changing the algorithm changes the visible key fields.
-- Confirm that changing Encrypt to Decrypt changes the required inputs.
-- Confirm that invalid forms do not trigger unnecessary processing.
-- Confirm that successful responses download with the expected extension.
-- Confirm that temporary files are removed after success and failure.
-- Confirm that the server is reachable only through the intended local address.
-- Confirm that the educational disclaimer is visible before file selection.
-
-## Implemented RSA behavior and limits
-
-- Generate only RSA-2048 keys with exponent 65537; import only that same RSA
-  configuration from PEM.
-- Encrypt with RSA-OAEP using MGF1-SHA256 and SHA-256, and decrypt only with
-  the matching private key.
-- Enforce a 190-byte plaintext maximum for direct RSA. No truncation,
-  chunking, or fallback/hybrid algorithm is performed.
-- Keep source files, ciphertext, generated keys, imported keys, and
-  passphrases in request memory only. CipherForge does not persist or log them.
-- Use `.rsaenc` only for the small JSON envelope described above. It exposes
-  filename and MIME metadata, so use non-sensitive demonstration files.
-
-## Future substitution-cipher phase
-
-After RSA and AES-CBC are complete, the substitution cipher can be added as a third selectable option.
-
-The later feature should:
-
-- Accept UTF-8 text files only.
-- Require or generate a 26-letter substitution key.
-- Preserve case, punctuation, whitespace, and line breaks where possible.
-- Reject keys that are not exactly 26 unique alphabetic characters.
-- Keep the key separate from the output file.
-- State clearly that substitution is easily broken and is included only for education.
-
-## Future hosting direction
-
-Hosting should be treated as a separate project phase. Before exposing CipherForge publicly, the project would need HTTPS, an explicit storage and deletion policy, stronger upload controls, rate limiting, dependency maintenance, secure secret handling, monitoring, and a decision about whether server-side plaintext processing is acceptable.
-
-For a resume or LinkedIn demonstration, a local demo video, screenshots, and a repository link are appropriate. A public deployment should not imply secure file storage unless those operational controls have actually been implemented.
-
-## Reference documentation
-
-- [Python `cryptography` RSA documentation](https://cryptography.io/en/stable/hazmat/primitives/asymmetric/rsa/)
-- [Python `cryptography` symmetric-encryption documentation](https://cryptography.io/en/stable/hazmat/primitives/symmetric-encryption/)
-- [Python `cryptography` PBKDF2 documentation](https://cryptography.io/en/stable/hazmat/primitives/key-derivation-functions/)
-- [Flask file-upload documentation](https://flask.palletsprojects.com/en/stable/patterns/fileuploads/)
+## Current scope
+
+AES-CBC and direct RSA workflows are implemented. A substitution cipher is a
+possible future educational feature; it is not in this version. CipherForge is
+for local use and is not publicly hosted.
+
+See [LICENSE](LICENSE) for the project license. The previous detailed project
+plan and implementation notes are preserved in
+[ProjectStructure.md](ProjectStructure.md).
