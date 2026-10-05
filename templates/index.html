@@ -10,6 +10,7 @@
     <meta name="theme-color" content="#f7faf7" />
     <title>CipherForge — File encryption, made tangible</title>
     <link rel="stylesheet" href="../static/css/styles.css" />
+    <script src="../static/js/crypto.js" defer></script>
     <script src="../static/js/app.js" defer></script>
   </head>
   <body>
@@ -182,7 +183,7 @@
                 </span>
                 <span class="drop-zone-copy">
                   <span class="drop-title">Drop your file here, or <span>browse</span></span>
-                <span class="drop-subtitle" id="file-hint">Any file type · Max 20 MB · Processed by your local app</span>
+                <span class="drop-subtitle" id="file-hint">Any file type · Max 20 MB · Processed in your browser</span>
                 </span>
                 <span class="browse-arrow" aria-hidden="true">↗</span>
               </label>
@@ -263,7 +264,7 @@
                     <span class="field-label">Need a demonstration key pair?</span>
                     <span class="field-optional">OPTIONAL PASSPHRASE</span>
                   </div>
-                  <p class="field-help">Generate a fresh RSA-2048 pair. The ZIP is downloaded locally; CipherForge does not keep either key.</p>
+                  <p class="field-help">Generate a fresh RSA-2048 pair in this browser. The ZIP is downloaded to your device; CipherForge does not receive either key.</p>
                   <label class="visually-hidden" for="rsa-generation-passphrase">Optional private-key passphrase</label>
                   <input id="rsa-generation-passphrase" type="password" autocomplete="new-password" placeholder="Optional private-key passphrase" />
                   <label class="visually-hidden" for="rsa-generation-confirmation">Confirm optional private-key passphrase</label>
@@ -285,7 +286,7 @@
                   accept=".pem,.key"
                   aria-describedby="rsa-private-key-help"
                 />
-                <p class="field-help" id="rsa-private-key-help">Use the matching RSA-2048 private PEM. It is never stored.</p>
+                <p class="field-help" id="rsa-private-key-help">Use the matching RSA-2048 private PEM. It is read only in this browser and is never uploaded.</p>
                 <label class="field-label rsa-passphrase-label" for="rsa-passphrase-input">Private-key passphrase <span>OPTIONAL</span></label>
                 <input id="rsa-passphrase-input" name="rsa_passphrase" type="password" autocomplete="current-password" placeholder="Only needed for an encrypted private PEM" />
               </div>
@@ -301,7 +302,7 @@
               </button>
               <p class="submit-note">
                 <span class="note-shield" aria-hidden="true">♢</span>
-                <span id="processing-note">Files are processed only by the local app.</span>
+                <span id="processing-note">Files are processed in this browser and are not uploaded.</span>
               </p>
             </div>
             <p class="form-status" id="form-status" role="status" aria-live="polite" hidden></p>

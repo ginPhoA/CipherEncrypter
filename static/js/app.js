@@ -1,7 +1,6 @@
 "use strict";
 
-// GitHub Pages and file:// show a static preview. The crypto API is used only
-// when this page is served by CipherForge on localhost.
+// The file operations run in the browser, including on GitHub Pages.
 (() => {
   const MAX_SOURCE_FILE_BYTES = 20 * 1024 * 1024;
   const MAX_PACKAGE_FILE_BYTES = Math.ceil((MAX_SOURCE_FILE_BYTES + 16) / 3) * 4 + 64 * 1024;
@@ -50,15 +49,8 @@
 
   if (!form || !fileInput) return;
 
-  const usesLocalBackend =
-    window.location.protocol !== "file:" &&
-    ["localhost", "127.0.0.1"].includes(window.location.hostname);
-  const localServerMessage =
-    "This static preview cannot generate keys or process files. Run CipherForge locally with `python run.py`.";
-  if (!usesLocalBackend) {
-    previewLabel.textContent = "Static preview";
-    processingNote.textContent = "Static preview only; files stay in this browser.";
-  }
+  previewLabel.textContent = "Browser-side processing";
+  processingNote.textContent = "Files and keys are processed in this browser and are not uploaded.";
 
   let currentOperation = "encrypt";
   let currentAlgorithm = "aes-cbc";
@@ -85,6 +77,14 @@
     downloadLink.removeAttribute("href");
     downloadLink.removeAttribute("download");
     downloadFilename.textContent = "Your file is ready";
+  }
+
+  function showDownload(blob, name) {
+    currentDownloadUrl = URL.createObjectURL(blob);
+    downloadLink.href = currentDownloadUrl;
+    downloadLink.download = name;
+    downloadFilename.textContent = name;
+    downloadLink.hidden = false;
   }
 
   function updateStatus(message, state = "info") {
@@ -211,8 +211,8 @@
       asideHeading.textContent = "Two keys for one file.";
       asideDetail.textContent = "Share public. Keep private.";
       algorithmExplanation.textContent = isEncrypt
-        ? "The public key encrypts; only its matching private key decrypts. Maximum 190 bytes."
-        : "The matching private key decrypts the package. The public key can be shared.";
+        ? "The public key encrypts; only its matching private key decrypts. Maximum 190 bytes. Processed in your browser."
+        : "The matching private key decrypts the package. The public key can be shared. Processed in your browser.";
       processStepTwoTitle.textContent = isEncrypt ? "Choose an RSA public key" : "Add the RSA private key";
       processStepTwoDetail.textContent = isEncrypt
         ? "Upload a key or generate a demonstration pair"
@@ -221,8 +221,8 @@
       asideHeading.textContent = "A lock for your file.";
       asideDetail.textContent = "A passcode you keep.";
       algorithmExplanation.textContent = isEncrypt
-        ? "PBKDF2 derives a key from your passcode; AES-CBC encrypts and an HMAC detects changes."
-        : "Enter the same passcode; CipherForge checks the HMAC before decrypting.";
+        ? "PBKDF2 derives keys from your passcode; AES-CBC encrypts and an HMAC detects changes. Processed in your browser."
+        : "Enter the same passcode; CipherForge checks the HMAC before decrypting in your browser.";
       processStepTwoTitle.textContent = isEncrypt ? "Add a file and passcode" : "Add the package and passcode";
       processStepTwoDetail.textContent = isEncrypt
         ? "Keep the passcode to decrypt the file later"
@@ -244,14 +244,14 @@
     if (isRsa) {
       fileInput.accept = isEncrypt ? "" : ".rsaenc";
       fileHint.textContent = isEncrypt
-        ? "RSA-2048 direct encryption · Max 190 bytes · Processed by your local app"
-        : ".rsaenc packages · Max 64 KB · Processed by your local app";
+        ? "RSA-2048 direct encryption · Max 190 bytes · Processed in your browser"
+        : ".rsaenc packages · Max 64 KB · Processed in your browser";
       fileLimitLabel.textContent = isEncrypt ? "MAX 190 BYTES" : "MAX 64 KB";
     } else {
       fileInput.accept = isEncrypt ? "" : ".aescbc";
       fileHint.textContent = isEncrypt
-        ? "Any file type · Max 20 MB · Processed by your local app"
-        : ".aescbc packages · Max 27 MB · Processed by your local app";
+        ? "Any file type · Max 20 MB · Processed in your browser"
+        : ".aescbc packages · Max 27 MB · Processed in your browser";
       fileLimitLabel.textContent = isEncrypt ? "UP TO 20 MB" : "MAX 27 MB";
     }
   }
@@ -339,10 +339,7 @@
 
   async function generateRsaKeyPair() {
     clearStatus();
-    if (!usesLocalBackend) {
-      updateStatus(localServerMessage, "error");
-      return;
-    }
+    clearDownload();
     const passphrase = rsaGenerationPassphrase.value;
     if (passphrase && passphrase !== rsaGenerationConfirmation.value) {
       updateStatus("The optional private-key passphrase entries do not match.", "error");
@@ -353,45 +350,19 @@
       return;
     }
 
-    const keyRequest = new FormData();
-    keyRequest.set("key_size", "2048");
-    keyRequest.set("passphrase", passphrase);
-    keyRequest.set("passphrase_confirmation", rsaGenerationConfirmation.value);
     generateRsaKeysButton.disabled = true;
     updateStatus("Generating your RSA-2048 key pair…", "processing");
     try {
-      const response = await fetch("/api/keys/rsa", {
-        method: "POST",
-        body: keyRequest,
-        headers: { Accept: "application/zip, application/json" },
-      });
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null);
-        throw new Error(payload?.error?.message || "The key-pair request could not be completed.");
-      }
-      const keyArchive = await response.blob();
-      if (!keyArchive.size) throw new Error("The server returned an empty key archive.");
-      const archiveUrl = URL.createObjectURL(keyArchive);
-      const anchor = document.createElement("a");
-      anchor.href = archiveUrl;
-      anchor.download = response.headers.get("X-Download-Filename") || "cipherforge-rsa-2048-key-pair.zip";
-      document.body.append(anchor);
-      anchor.click();
-      anchor.remove();
-      window.setTimeout(() => URL.revokeObjectURL(archiveUrl), 1000);
+      const archive = await window.CipherForgeCrypto.generateRsaKeyArchive(passphrase);
+      showDownload(archive.blob, archive.name);
       rsaGenerationPassphrase.value = "";
       rsaGenerationConfirmation.value = "";
       updateStatus(
-        "Your key-pair ZIP is ready. Extract it, keep the private PEM safe, then choose the public PEM above.",
+        "Your key-pair ZIP was generated in this browser. Download and extract it, keep the private PEM safe, then choose the public PEM above.",
         "success",
       );
     } catch (error) {
-      updateStatus(
-        error instanceof TypeError
-          ? "Could not reach CipherForge. Start it with `python run.py` and open http://127.0.0.1:5000."
-          : error.message,
-        "error",
-      );
+      updateStatus(error.message || "The RSA key pair could not be generated in this browser.", "error");
     } finally {
       generateRsaKeysButton.disabled = false;
     }
@@ -457,36 +428,27 @@
     clearStatus();
     clearDownload();
     if (!validateForm()) return;
-    if (!usesLocalBackend) {
-      updateStatus(localServerMessage, "error");
-      return;
-    }
 
     const operation = currentOperation;
     const algorithm = currentAlgorithm;
-    const formData = new FormData(form);
+    const file = fileInput.files[0];
+    const keyFile = algorithm === "rsa"
+      ? (operation === "encrypt" ? rsaPublicKeyInput.files[0] : rsaPrivateKeyInput.files[0])
+      : null;
     form.querySelectorAll("button, input").forEach((control) => {
       control.disabled = true;
     });
     updateStatus(operation === "encrypt" ? "Encrypting your file…" : "Decrypting your file…", "processing");
     try {
-      const response = await fetch(operation === "encrypt" ? "/api/encrypt" : "/api/decrypt", {
-        method: "POST",
-        body: formData,
-        headers: { Accept: "application/octet-stream, application/json" },
+      const output = await window.CipherForgeCrypto.processFile({
+        operation,
+        algorithm,
+        file,
+        password: passwordInput.value,
+        keyFile,
+        keyPassphrase: rsaPassphraseInput.value,
       });
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null);
-        throw new Error(payload?.error?.message || "The request could not be completed.");
-      }
-      const output = await response.blob();
-      if (!output.size) throw new Error("The server returned an empty file.");
-
-      currentDownloadUrl = URL.createObjectURL(output);
-      downloadLink.href = currentDownloadUrl;
-      downloadLink.download = response.headers.get("X-Download-Filename") || "processed-file";
-      downloadFilename.textContent = downloadLink.download;
-      downloadLink.hidden = false;
+      showDownload(output.blob, output.name);
       passwordInput.value = "";
       confirmInput.value = "";
       rsaPassphraseInput.value = "";
@@ -501,12 +463,7 @@
         "success",
       );
     } catch (error) {
-      updateStatus(
-        error instanceof TypeError
-          ? "Could not reach CipherForge. Start it with `python run.py` and open http://127.0.0.1:5000."
-          : error.message,
-        "error",
-      );
+      updateStatus(error.message || "The file could not be processed.", "error");
     } finally {
       form.querySelectorAll("button, input").forEach((control) => {
         control.disabled = false;
