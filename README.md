@@ -26,7 +26,7 @@ The hosted GitHub Pages app needs only a modern browser. For local use, Python
 and the packages in `requirements.txt` run the Flask server. No Node.js or
 frontend build step is needed.
 
-## Encryption in plain language
+## High-level Description
 
 Encryption scrambles file contents so they can only be recovered using the
 right secret. The scrambled result is called **ciphertext**. Decryption changes
