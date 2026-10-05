@@ -185,8 +185,11 @@ in `templates/`; its CSS and JavaScript are in `static/`.
 
 ## Developer checks
 
-To run the tests and code checks, install the development dependencies. On
-macOS, activate `.venv` first if you opened a new terminal.
+GitHub Actions runs these checks on every push and pull request, using Python
+3.11 (the project's minimum) and 3.14. It installs the development dependencies,
+runs the complete test suite, checks Python lint rules, and checks formatting.
+You can run the same checks locally after installing the development
+dependencies. On macOS, activate `.venv` first if you opened a new terminal.
 
 macOS:
 
@@ -205,6 +208,18 @@ Windows PowerShell:
 .\.venv\Scripts\python.exe -m ruff check .
 .\.venv\Scripts\python.exe -m ruff format --check .
 ```
+
+Pytest discovers every `test_*.py` file under `tests/`, so tests for a new
+algorithm are included automatically. When adding one, add service tests for
+known examples, encode/decode round trips, and invalid input, plus route tests
+if it is exposed through the website. Keep the AES-CBC and RSA tests in place:
+they run on every change and catch regressions in the existing workflows.
+
+For example, substitution-cipher tests should check a known plaintext/ciphertext
+pair, reject keys that are not 26 unique letters, preserve case and punctuation,
+and exercise its route if a route is added. The workflow can only verify behavior
+that has tests; the new algorithm needs those tests to provide a meaningful
+regression check.
 
 ## Current scope
 
