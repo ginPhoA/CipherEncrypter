@@ -1,0 +1,43 @@
+# Python bytecode, test, and tool output
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Virtual environments and local configuration
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Flask/runtime data: uploads, downloads, temporary data, and local state
+instance/*
+!instance/.gitkeep
+uploads/
+tmp/
+temp/
+
+# Never commit cryptographic material or user file output
+*.aescbc
+*.rsaenc
+*.pem
+*.key
+*.der
+*.p12
+*.pfx
+*.crt
+*.cer
+*.encrypted
+*.decrypted
+
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
