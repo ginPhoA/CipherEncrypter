@@ -1,0 +1,4 @@
+# Development and test dependencies. Includes the runtime dependencies above.
+-r requirements.txt
+pytest>=8.0,<10.0
+ruff>=0.8,<1.0
