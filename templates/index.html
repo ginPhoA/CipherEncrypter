@@ -77,9 +77,10 @@
           <h2 id="notice-title">A quick note before you begin</h2>
           <p>
             CipherForge is an educational demo, not secure file storage. Don’t
-            use confidential, sensitive, or irreplaceable files. AES-CBC is
-            shown for learning, not as a modern default; direct RSA only works
-            for very small demonstration files.
+            use confidential, sensitive, or irreplaceable files. It provides no
+            professional key management, identity checks, authentication, or
+            cloud storage. AES-CBC is shown for learning, not as a modern
+            default; direct RSA only works for very small demonstration files.
           </p>
         </div>
         <span class="notice-tag">EDUCATIONAL USE ONLY</span>
@@ -129,7 +130,9 @@
                   </span>
                   <span class="algorithm-copy">
                     <span class="algorithm-title">AES-CBC</span>
-                    <span class="algorithm-description">Password based · files</span>
+                    <span class="algorithm-description">
+                      Password-derived key · files to 20 MB
+                    </span>
                   </span>
                   <span class="algorithm-state active-state"><span></span> ACTIVE</span>
                   <span class="algorithm-radio" aria-hidden="true"></span>
@@ -145,13 +148,21 @@
                   </span>
                   <span class="algorithm-copy">
                     <span class="algorithm-title">RSA</span>
-                    <span class="algorithm-description">Public key · RSA-2048 only</span>
+                    <span class="algorithm-description">
+                      Public/private key pair · 190-byte limit
+                    </span>
                   </span>
                   <span class="algorithm-state active-state"><span></span> ACTIVE</span>
                   <span class="algorithm-radio" aria-hidden="true"></span>
                 </label>
               </div>
-              <p class="algorithm-footnote" id="algorithm-footnote"><span aria-hidden="true">✳</span> AES-CBC accepts files up to 20 MB.</p>
+              <p class="algorithm-footnote">
+                <span aria-hidden="true">✳</span>
+                <span id="algorithm-explanation">
+                  PBKDF2 derives a key from your passcode; AES-CBC encrypts and
+                  an HMAC detects package changes.
+                </span>
+              </p>
             </fieldset>
 
             <div class="form-divider"></div>
@@ -278,7 +289,7 @@
                 <label class="field-label rsa-passphrase-label" for="rsa-passphrase-input">Private-key passphrase <span>OPTIONAL</span></label>
                 <input id="rsa-passphrase-input" name="rsa_passphrase" type="password" autocomplete="current-password" placeholder="Only needed for an encrypted private PEM" />
               </div>
-              <p class="rsa-limit-note">Direct RSA-OAEP with RSA-2048 accepts at most 190 bytes. Images and most files are too large.</p>
+              <p class="rsa-limit-note">RSA encrypts with a public key and decrypts with its matching private key. Direct RSA accepts at most 190 bytes, so images and most files are too large.</p>
             </div>
 
             <div class="form-footer">
@@ -312,7 +323,10 @@
               <span class="aside-kicker">A LITTLE CONTEXT</span>
               <span class="aside-spark" aria-hidden="true">✳</span>
             </div>
-            <h2 id="aside-title">A lock for your file.<br /><span>A key only you know.</span></h2>
+            <h2 id="aside-title">
+              <span id="aside-heading">A lock for your file.</span><br />
+              <span id="aside-detail">A passcode you keep.</span>
+            </h2>
             <p class="aside-description">
               Encryption transforms readable data into scrambled text. The
               right key turns it back into a file you can use.
@@ -351,12 +365,18 @@
               </li>
               <li class="process-item" data-process-step="2">
                 <span class="process-number">02</span>
-                <span class="process-copy"><strong>Add a file and password</strong><span>Keep your key somewhere safe</span></span>
+                <span class="process-copy">
+                  <strong id="process-step-two-title">Add a file and passcode</strong>
+                  <span id="process-step-two-detail">Keep your passcode somewhere safe</span>
+                </span>
                 <span class="process-check" aria-hidden="true">✓</span>
               </li>
               <li class="process-item" data-process-step="3">
                 <span class="process-number">03</span>
-                <span class="process-copy"><strong>Process and download</strong><span>Get your encrypted or recovered file</span></span>
+                <span class="process-copy">
+                  <strong id="process-step-three-title">Process and download</strong>
+                  <span>Get your encrypted or recovered file</span>
+                </span>
                 <span class="process-check" aria-hidden="true">✓</span>
               </li>
             </ol>
