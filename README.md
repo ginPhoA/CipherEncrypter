@@ -212,6 +212,4 @@ AES-CBC and direct RSA workflows are implemented. A substitution cipher is a
 possible future educational feature; it is not in this version. CipherForge is
 for local use and is not publicly hosted.
 
-See [LICENSE](LICENSE) for the project license. The previous detailed project
-plan and implementation notes are preserved in
-[ProjectStructure.md](ProjectStructure.md).
+See [LICENSE](LICENSE) for the project license.
