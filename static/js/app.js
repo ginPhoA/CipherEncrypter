@@ -15,7 +15,7 @@
   const dropZone = document.querySelector("#drop-zone");
   const fileHint = document.querySelector("#file-hint");
   const fileLimitLabel = document.querySelector("#file-limit-label");
-  const algorithmFootnote = document.querySelector("#algorithm-footnote");
+  const algorithmExplanation = document.querySelector("#algorithm-explanation");
   const selectedFile = document.querySelector("#selected-file");
   const fileName = document.querySelector("#file-name");
   const fileSize = document.querySelector("#file-size");
@@ -35,6 +35,11 @@
   const rsaGenerationConfirmation = document.querySelector("#rsa-generation-confirmation");
   const generateRsaKeysButton = document.querySelector("#generate-rsa-keys");
   const submitLabel = document.querySelector("#submit-label");
+  const asideHeading = document.querySelector("#aside-heading");
+  const asideDetail = document.querySelector("#aside-detail");
+  const processStepTwoTitle = document.querySelector("#process-step-two-title");
+  const processStepTwoDetail = document.querySelector("#process-step-two-detail");
+  const processStepThreeTitle = document.querySelector("#process-step-three-title");
   const statusMessage = document.querySelector("#form-status");
   const downloadLink = document.querySelector("#download-result");
   const downloadFilename = document.querySelector("#download-filename");
@@ -73,12 +78,15 @@
     statusMessage.textContent = message;
     statusMessage.hidden = false;
     statusMessage.classList.toggle("is-error", state === "error");
+    statusMessage.classList.toggle("is-processing", state === "processing");
+    statusMessage.classList.toggle("is-success", state === "success");
   }
 
   function clearStatus() {
     statusMessage.textContent = "";
     statusMessage.hidden = true;
     statusMessage.classList.remove("is-error");
+    statusMessage.classList.remove("is-processing", "is-success");
   }
 
   function formatFileSize(bytes) {
@@ -110,7 +118,7 @@
       currentAlgorithm === "rsa" || currentOperation === "decrypt" || confirmInput.value === passwordInput.value;
     const stepTwoReady = fileChosen && keyReady && confirmationReady;
     processSteps[0].classList.add("is-active");
-    const [_, stepTwo, stepThree] = processSteps;
+    const [, stepTwo, stepThree] = processSteps;
     stepTwo.classList.toggle("is-active", fileChosen || keyReady || operationComplete);
     stepTwo.classList.toggle("is-complete", stepTwoReady || operationComplete);
     stepThree.classList.toggle("is-active", stepTwoReady && !operationComplete);
@@ -186,6 +194,29 @@
     passwordInput.required = !isRsa;
     confirmInput.required = !isRsa && isEncrypt;
 
+    if (isRsa) {
+      asideHeading.textContent = "Two keys for one file.";
+      asideDetail.textContent = "Share public. Keep private.";
+      algorithmExplanation.textContent = isEncrypt
+        ? "The public key encrypts; only its matching private key decrypts. Maximum 190 bytes."
+        : "The matching private key decrypts the package. The public key can be shared.";
+      processStepTwoTitle.textContent = isEncrypt ? "Choose an RSA public key" : "Add the RSA private key";
+      processStepTwoDetail.textContent = isEncrypt
+        ? "Upload a key or generate a demonstration pair"
+        : "Use the key that matches the package";
+    } else {
+      asideHeading.textContent = "A lock for your file.";
+      asideDetail.textContent = "A passcode you keep.";
+      algorithmExplanation.textContent = isEncrypt
+        ? "PBKDF2 derives a key from your passcode; AES-CBC encrypts and an HMAC detects changes."
+        : "Enter the same passcode; CipherForge checks the HMAC before decrypting.";
+      processStepTwoTitle.textContent = isEncrypt ? "Add a file and passcode" : "Add the package and passcode";
+      processStepTwoDetail.textContent = isEncrypt
+        ? "Keep the passcode to decrypt the file later"
+        : "Use the passcode that encrypted this file";
+    }
+    processStepThreeTitle.textContent = `${isEncrypt ? "Encrypt" : "Decrypt"} and download`;
+
     passwordLabel.textContent = isEncrypt ? "Create a passcode" : "Enter your passcode";
     passwordInput.autocomplete = isEncrypt ? "new-password" : "current-password";
     passwordInput.placeholder = isEncrypt
@@ -203,14 +234,12 @@
         ? "RSA-2048 direct encryption · Max 190 bytes · Processed by your local app"
         : ".rsaenc packages · Max 64 KB · Processed by your local app";
       fileLimitLabel.textContent = isEncrypt ? "MAX 190 BYTES" : "MAX 64 KB";
-      algorithmFootnote.innerHTML = "<span aria-hidden=\"true\">✳</span> Direct RSA is for tiny demonstration files; images usually exceed 190 bytes.";
     } else {
       fileInput.accept = isEncrypt ? "" : ".aescbc";
       fileHint.textContent = isEncrypt
         ? "Any file type · Max 20 MB · Processed by your local app"
         : ".aescbc packages · Max 27 MB · Processed by your local app";
       fileLimitLabel.textContent = isEncrypt ? "UP TO 20 MB" : "MAX 27 MB";
-      algorithmFootnote.innerHTML = "<span aria-hidden=\"true\">✳</span> AES-CBC accepts files up to 20 MB.";
     }
   }
 
@@ -316,7 +345,7 @@
     keyRequest.set("passphrase", passphrase);
     keyRequest.set("passphrase_confirmation", rsaGenerationConfirmation.value);
     generateRsaKeysButton.disabled = true;
-    updateStatus("Generating your RSA-2048 key pair…");
+    updateStatus("Generating your RSA-2048 key pair…", "processing");
     try {
       const response = await fetch("/api/keys/rsa", {
         method: "POST",
@@ -339,7 +368,10 @@
       window.setTimeout(() => URL.revokeObjectURL(archiveUrl), 1000);
       rsaGenerationPassphrase.value = "";
       rsaGenerationConfirmation.value = "";
-      updateStatus("Your key-pair ZIP is ready. Extract it, keep the private PEM safe, then choose the public PEM above.");
+      updateStatus(
+        "Your key-pair ZIP is ready. Extract it, keep the private PEM safe, then choose the public PEM above.",
+        "success",
+      );
     } catch (error) {
       updateStatus(
         error instanceof TypeError
@@ -425,7 +457,7 @@
     form.querySelectorAll("button, input").forEach((control) => {
       control.disabled = true;
     });
-    updateStatus(operation === "encrypt" ? "Encrypting your file…" : "Decrypting your file…");
+    updateStatus(operation === "encrypt" ? "Encrypting your file…" : "Decrypting your file…", "processing");
     try {
       const response = await fetch(operation === "encrypt" ? "/api/encrypt" : "/api/decrypt", {
         method: "POST",
@@ -455,6 +487,7 @@
             ? "RSA encryption is complete. Keep the matching private key and its passphrase safe."
             : "Encryption is complete. Keep your passcode somewhere safe; it is not stored in the package."
           : "Decryption is complete. Download the recovered file below.",
+        "success",
       );
     } catch (error) {
       updateStatus(

@@ -4,26 +4,17 @@
   --color-page: #e7f0e5;
   --color-surface: #f0f6ed;
   --color-surface-soft: #dfeadd;
-  --color-surface-green: #d3e4d0;
   --color-ink: #183127;
   --color-ink-soft: #4b5f4d;
-  --color-muted: #748275;
   --color-line: #d1dfd0;
-  --color-line-strong: #b9cfbb;
   --color-green: #205e38;
   --color-green-deep: #15482e;
   --color-green-bright: #4b8657;
   --color-green-pale: #cce1cc;
-  --color-mint: #a9cba9;
   --color-coral: #e8896d;
-  --color-coral-pale: #fff2ec;
-  --color-coral-ink: #a45037;
-  --color-warning: #fff8e7;
   --color-warning-line: #f2dfae;
-  --color-warning-ink: #78591d;
   --color-error: #ad4238;
   --color-error-pale: #fff0ee;
-  --color-shadow: rgb(25 59 39 / 7%);
 
   --font-body: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-display: "Manrope", "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -404,7 +395,7 @@ main {
   max-width: 790px;
   margin: 0;
   color: #75684d;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.55;
 }
 
@@ -608,7 +599,7 @@ label.algorithm-card {
 .algorithm-description {
   overflow: hidden;
   color: #829087;
-  font-size: 9px;
+  font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -658,10 +649,10 @@ label.algorithm-card {
 .algorithm-footnote {
   margin: 9px 0 0;
   color: #8a988e;
-  font-size: 10px;
+  font-size: 11px;
 }
 
-.algorithm-footnote span {
+.algorithm-footnote > span:first-child {
   margin-right: 4px;
   color: var(--color-coral);
 }
@@ -806,7 +797,7 @@ label.algorithm-card {
 
 .file-size {
   color: #8b988f;
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .remove-file {
@@ -903,7 +894,7 @@ label.algorithm-card {
 .field-help {
   margin: 6px 0 0;
   color: #8c9990;
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .confirm-password-group {
@@ -1088,6 +1079,18 @@ label.algorithm-card {
   border-color: #f0d2cd;
   background: var(--color-error-pale);
   color: var(--color-error);
+}
+
+.form-status.is-processing {
+  border-color: #d6e3d6;
+  background: #edf3ea;
+  color: #526656;
+}
+
+.form-status.is-success {
+  border-color: #c7dfcb;
+  background: #e2efe1;
+  color: var(--color-green-deep);
 }
 
 .download-result {
@@ -1341,13 +1344,13 @@ label.algorithm-card {
 
 .process-copy strong {
   color: #536257;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
 }
 
 .process-copy span {
   color: #9aa59d;
-  font-size: 8px;
+  font-size: 9px;
 }
 
 .process-check {
@@ -1563,7 +1566,7 @@ label.algorithm-card {
   }
 
   .notice p {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .workspace-layout {
