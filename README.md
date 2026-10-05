@@ -9,8 +9,6 @@ the matching passcode or key to recover it.
 > irreplaceable files. The app has no professional key management, identity
 > verification, user authentication, or cloud storage.
 
-Access the static webpage here: https://ginphoa.github.io/CipherEncrypter/
-
 ## What it does
 
 - Encrypts and decrypts text and binary files with AES-CBC.
