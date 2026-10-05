@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="CipherForge is an educational file encryption and decryption demonstration."
+    />
+    <meta name="theme-color" content="#f7faf7" />
+    <title>CipherForge — File encryption, made tangible</title>
+    <link rel="stylesheet" href="../static/css/styles.css" />
+    <script src="../static/js/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#workspace">Skip to the workspace</a>
+
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="CipherForge home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none">
+            <path d="M20 3.5 34 9v9.5c0 8.2-5.4 14.8-14 18-8.6-3.2-14-9.8-14-18V9l14-5.5Z" fill="currentColor" />
+            <path d="m13.5 20.2 4.3 4.3 9-9" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+        <span class="brand-name">cipher<span>forge</span></span>
+      </a>
+
+      <nav class="top-nav" aria-label="Main navigation">
+        <a class="top-nav-link is-current" href="#workspace" aria-current="page">Workspace</a>
+        <a class="top-nav-link" href="#how-it-works">How it works</a>
+      </nav>
+
+      <div class="preview-badge">
+        <span class="preview-dot" aria-hidden="true"></span>
+        <span>Local preview</span>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-line"></span> YOUR FILE, YOUR KEY</p>
+          <h1 id="page-title">Privacy you can <span>see.</span></h1>
+          <p class="hero-description">
+            Explore how file encryption works with a hands-on, educational
+            workspace. Choose a direction and follow the process.
+          </p>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="hero-spark spark-one"></div>
+          <div class="hero-spark spark-two"></div>
+          <div class="hero-lock">
+            <svg viewBox="0 0 64 64" fill="none">
+              <path d="M19 27v-7a13 13 0 0 1 26 0v7" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+              <rect x="12" y="25" width="40" height="31" rx="8" fill="currentColor" />
+              <circle cx="32" cy="39" r="4" fill="#fff" />
+              <path d="M32 43v5" stroke="#fff" stroke-width="3" stroke-linecap="round" />
+            </svg>
+          </div>
+          <span class="art-label art-label-top">AES-256</span>
+          <span class="art-label art-label-bottom">YOUR FILE · YOUR KEY</span>
+        </div>
+      </section>
+
+      <section class="notice" aria-labelledby="notice-title">
+        <span class="notice-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 3.5 21 20H3l9-16.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+            <path d="M12 9v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <circle cx="12" cy="17" r="1" fill="currentColor" />
+          </svg>
+        </span>
+        <div class="notice-copy">
+          <h2 id="notice-title">A quick note before you begin</h2>
+          <p>
+            CipherForge is an educational demo, not secure file storage. Don’t
+            use confidential, sensitive, or irreplaceable files. AES-CBC is
+            shown for learning, not as a modern default for protecting data.
+          </p>
+        </div>
+        <span class="notice-tag">EDUCATIONAL USE ONLY</span>
+      </section>
+
+      <section class="workspace-layout" id="workspace" aria-label="Encryption workspace">
+        <div class="workspace-main">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">THE WORKSPACE</p>
+              <h2>What would you like to do?</h2>
+            </div>
+            <span class="step-count"><span id="current-step">01</span> / 03</span>
+          </div>
+
+          <form class="workbench-card" id="crypto-form" novalidate>
+            <fieldset class="operation-fieldset">
+              <legend class="field-label">Choose an operation</legend>
+              <div class="operation-switch" role="group" aria-label="Operation">
+                <button class="operation-button is-selected" type="button" data-operation="encrypt" aria-pressed="true">
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M10 3.5v13M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                  Encrypt a file
+                </button>
+                <button class="operation-button" type="button" data-operation="decrypt" aria-pressed="false">
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    <path d="M11.5 5.5 16 10l-4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  Decrypt a file
+                </button>
+              </div>
+            </fieldset>
+
+            <fieldset class="algorithm-fieldset">
+              <legend class="field-label">Choose an algorithm</legend>
+              <div class="algorithm-grid">
+                <label class="algorithm-card is-selected" id="aes-card">
+                  <input class="visually-hidden" type="radio" name="algorithm" value="aes-cbc" checked />
+                  <span class="algorithm-icon algorithm-icon-aes" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <rect x="4" y="10" width="16" height="11" rx="3" stroke="currentColor" stroke-width="1.7" />
+                      <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                      <circle cx="12" cy="15" r="1.3" fill="currentColor" />
+                    </svg>
+                  </span>
+                  <span class="algorithm-copy">
+                    <span class="algorithm-title">AES-CBC</span>
+                    <span class="algorithm-description">Password based · files</span>
+                  </span>
+                  <span class="algorithm-state active-state"><span></span> ACTIVE</span>
+                  <span class="algorithm-radio" aria-hidden="true"></span>
+                </label>
+
+                <div class="algorithm-card is-disabled" aria-disabled="true">
+                  <span class="algorithm-icon algorithm-icon-rsa" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="m12 3 8 4v5c0 4.6-3 7.8-8 9-5-1.2-8-4.4-8-9V7l8-4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                      <path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </span>
+                  <span class="algorithm-copy">
+                    <span class="algorithm-title">RSA</span>
+                    <span class="algorithm-description">Public key · small files</span>
+                  </span>
+                  <span class="algorithm-state planned-state">DAY 2</span>
+                  <span class="algorithm-lock" aria-hidden="true">⌑</span>
+                </div>
+              </div>
+              <p class="algorithm-footnote"><span aria-hidden="true">✳</span> More ways to explore are on the way.</p>
+            </fieldset>
+
+            <div class="form-divider"></div>
+
+            <div class="field-block">
+              <div class="field-heading">
+                <label class="field-label" for="file-input">Your file</label>
+                <span class="field-optional">UP TO 20 MB</span>
+              </div>
+              <label class="drop-zone" id="drop-zone" for="file-input">
+                <input class="visually-hidden" id="file-input" name="file" type="file" required aria-describedby="file-hint" />
+                <span class="upload-icon" aria-hidden="true">
+                  <svg viewBox="0 0 28 28" fill="none">
+                    <path d="M14 18V5m0 0L9 10m5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M5 17v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <span class="drop-zone-copy">
+                  <span class="drop-title">Drop your file here, or <span>browse</span></span>
+                <span class="drop-subtitle" id="file-hint">Any file type · Max 20 MB · Processed by your local app</span>
+                </span>
+                <span class="browse-arrow" aria-hidden="true">↗</span>
+              </label>
+              <div class="selected-file" id="selected-file" hidden>
+                <span class="file-type-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M6 3.75h7l5 5v11.5H6V3.75Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                    <path d="M13 4v5h5M9 13h6M9 16h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <span class="file-details">
+                  <span class="file-name" id="file-name"></span>
+                  <span class="file-size" id="file-size"></span>
+                </span>
+                <button class="remove-file" id="remove-file" type="button" aria-label="Remove selected file">×</button>
+              </div>
+            </div>
+
+            <div class="field-block password-block">
+              <div class="field-heading">
+                <label class="field-label" for="password-input" id="password-label">Create a passcode</label>
+                <span class="field-optional">AES-CBC KEY</span>
+              </div>
+              <div class="password-input-wrap">
+                <span class="password-icon" aria-hidden="true">
+                  <svg viewBox="0 0 20 20" fill="none">
+                    <rect x="3.5" y="8.5" width="13" height="9" rx="2" stroke="currentColor" stroke-width="1.5" />
+                    <path d="M6.5 8.5V6a3.5 3.5 0 0 1 7 0v2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <input id="password-input" name="password" type="password" autocomplete="new-password" placeholder="Enter a passcode for this file" required />
+                <button class="reveal-password" type="button" data-reveal="password-input" aria-label="Show password">
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M2.5 10s2.6-4.5 7.5-4.5 7.5 4.5 7.5 4.5-2.6 4.5-7.5 4.5S2.5 10 2.5 10Z" stroke="currentColor" stroke-width="1.4" />
+                    <circle cx="10" cy="10" r="2" stroke="currentColor" stroke-width="1.4" />
+                  </svg>
+                </button>
+              </div>
+              <p class="field-help" id="password-help">You’ll need this same passcode to decrypt the file later.</p>
+              <div class="confirm-password-group" id="confirm-group">
+                <label class="field-label" for="confirm-input">Confirm passcode</label>
+                <div class="password-input-wrap">
+                  <span class="password-icon" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none">
+                      <rect x="3.5" y="8.5" width="13" height="9" rx="2" stroke="currentColor" stroke-width="1.5" />
+                      <path d="M6.5 8.5V6a3.5 3.5 0 0 1 7 0v2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                  </span>
+                  <input id="confirm-input" name="password_confirmation" type="password" autocomplete="new-password" placeholder="Enter it once more" required />
+                  <button class="reveal-password" type="button" data-reveal="confirm-input" aria-label="Show confirmation password">
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                      <path d="M2.5 10s2.6-4.5 7.5-4.5 7.5 4.5 7.5 4.5-2.6 4.5-7.5 4.5S2.5 10 2.5 10Z" stroke="currentColor" stroke-width="1.4" />
+                      <circle cx="10" cy="10" r="2" stroke="currentColor" stroke-width="1.4" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-footer">
+              <button class="submit-button" id="submit-button" type="submit">
+                <span id="submit-label">Encrypt file</span>
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M4 10h12m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <p class="submit-note"><span class="note-shield" aria-hidden="true">♢</span> Files are processed only by the local app.</p>
+            </div>
+            <p class="form-status" id="form-status" role="status" aria-live="polite" hidden></p>
+            <a class="download-result" id="download-result" hidden>
+              <span class="download-result-icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="none">
+                  <path d="M10 3.5v9m0 0 3.5-3.5M10 12.5 6.5 9M4 13.5v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <span class="download-result-copy">
+                <strong>Download processed file</strong>
+                <span id="download-filename">Your file is ready</span>
+              </span>
+              <span class="download-result-arrow" aria-hidden="true">↓</span>
+            </a>
+          </form>
+        </div>
+
+        <aside class="workspace-aside" id="how-it-works" aria-labelledby="aside-title">
+          <div class="aside-card aside-explainer">
+            <div class="aside-topline">
+              <span class="aside-kicker">A LITTLE CONTEXT</span>
+              <span class="aside-spark" aria-hidden="true">✳</span>
+            </div>
+            <h2 id="aside-title">A lock for your file.<br /><span>A key only you know.</span></h2>
+            <p class="aside-description">
+              Encryption transforms readable data into scrambled text. The
+              right key turns it back into a file you can use.
+            </p>
+            <div class="transformation" aria-label="File is encrypted with a key to become protected data">
+              <div class="transform-item">
+                <span class="transform-icon file-transform" aria-hidden="true">▤</span>
+                <span>YOUR FILE</span>
+              </div>
+              <span class="transform-join" aria-hidden="true">+</span>
+              <div class="transform-item">
+                <span class="transform-icon key-transform" aria-hidden="true">⌑</span>
+                <span>A KEY</span>
+              </div>
+              <span class="transform-arrow" aria-hidden="true">→</span>
+              <div class="transform-item">
+                <span class="transform-icon shield-transform" aria-hidden="true">◆</span>
+                <span>LOCKED</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="aside-card process-card">
+            <div class="process-heading">
+              <div>
+                <span class="aside-kicker">THE FLOW</span>
+                <h3>Three small steps</h3>
+              </div>
+              <span class="process-total">01 — 03</span>
+            </div>
+            <ol class="process-list">
+              <li class="process-item is-active" data-process-step="1">
+                <span class="process-number">01</span>
+                <span class="process-copy"><strong>Choose your direction</strong><span>Encrypt or decrypt a file</span></span>
+                <span class="process-check" aria-hidden="true">✓</span>
+              </li>
+              <li class="process-item" data-process-step="2">
+                <span class="process-number">02</span>
+                <span class="process-copy"><strong>Add a file and password</strong><span>Keep your key somewhere safe</span></span>
+                <span class="process-check" aria-hidden="true">✓</span>
+              </li>
+              <li class="process-item" data-process-step="3">
+                <span class="process-number">03</span>
+                <span class="process-copy"><strong>Process and download</strong><span>Get your encrypted or recovered file</span></span>
+                <span class="process-check" aria-hidden="true">✓</span>
+              </li>
+            </ol>
+          </div>
+
+          <div class="aside-footer">
+            <span class="footer-lock" aria-hidden="true">◈</span>
+            <p>For learning. For curiosity.<br /><strong>For your eyes only.</strong></p>
+          </div>
+        </aside>
+      </section>
+
+      <footer class="page-footer">
+        <a class="footer-brand" href="#top">cipher<span>forge</span></a>
+        <p>An educational cryptography demonstration</p>
+        <a class="back-to-top" href="#top">Back to top ↑</a>
+      </footer>
+    </main>
+  </body>
+</html>
