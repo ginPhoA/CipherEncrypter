@@ -124,6 +124,19 @@ $env:PORT = "5050"
 
 Then open <http://127.0.0.1:5050>.
 
+## GitHub Pages preview
+
+The root `index.html` opens the interface stored in `templates/index.html`.
+This makes the project page load the CipherForge webpage instead of rendering
+the repository README at the site root.
+
+GitHub Pages serves static files and cannot run the Flask server. The hosted
+page is therefore a visual preview: it lets you explore the controls, but it
+cannot generate keys or encrypt/decrypt files. It labels itself as a static
+preview and keeps file and passphrase selections in the browser without
+sending them to a server. Run CipherForge locally to use the cryptographic
+workflows.
+
 ## Try a round trip
 
 Use disposable, non-sensitive sample files: one small text file and one small
@@ -163,6 +176,7 @@ CipherForge/
 │   ├── css/styles.css       Page styling and responsive layout
 │   └── js/app.js            Form behavior and local API requests
 ├── templates/index.html     The single-page interface
+├── index.html               Root redirect for GitHub Pages
 ├── tests/
 │   ├── test_aes_cbc_service.py
 │   ├── test_rsa_service.py

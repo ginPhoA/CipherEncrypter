@@ -33,7 +33,7 @@
 
       <div class="preview-badge">
         <span class="preview-dot" aria-hidden="true"></span>
-        <span>Local preview</span>
+        <span id="preview-label">Local preview</span>
       </div>
     </header>
 
@@ -293,13 +293,16 @@
             </div>
 
             <div class="form-footer">
-              <button class="submit-button" id="submit-button" type="submit">
+              <button class="submit-button" id="submit-button" type="button">
                 <span id="submit-label">Encrypt file</span>
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <path d="M4 10h12m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
-              <p class="submit-note"><span class="note-shield" aria-hidden="true">♢</span> Files are processed only by the local app.</p>
+              <p class="submit-note">
+                <span class="note-shield" aria-hidden="true">♢</span>
+                <span id="processing-note">Files are processed only by the local app.</span>
+              </p>
             </div>
             <p class="form-status" id="form-status" role="status" aria-live="polite" hidden></p>
             <a class="download-result" id="download-result" hidden>

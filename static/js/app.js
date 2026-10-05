@@ -1,7 +1,7 @@
 "use strict";
 
-// Opened directly, this page is a preview. Through Flask, requests go only to
-// the local CipherForge API.
+// GitHub Pages and file:// show a static preview. The crypto API is used only
+// when this page is served by CipherForge on localhost.
 (() => {
   const MAX_SOURCE_FILE_BYTES = 20 * 1024 * 1024;
   const MAX_PACKAGE_FILE_BYTES = Math.ceil((MAX_SOURCE_FILE_BYTES + 16) / 3) * 4 + 64 * 1024;
@@ -34,6 +34,7 @@
   const rsaGenerationPassphrase = document.querySelector("#rsa-generation-passphrase");
   const rsaGenerationConfirmation = document.querySelector("#rsa-generation-confirmation");
   const generateRsaKeysButton = document.querySelector("#generate-rsa-keys");
+  const submitButton = document.querySelector("#submit-button");
   const submitLabel = document.querySelector("#submit-label");
   const asideHeading = document.querySelector("#aside-heading");
   const asideDetail = document.querySelector("#aside-detail");
@@ -44,8 +45,20 @@
   const downloadLink = document.querySelector("#download-result");
   const downloadFilename = document.querySelector("#download-filename");
   const currentStep = document.querySelector("#current-step");
+  const previewLabel = document.querySelector("#preview-label");
+  const processingNote = document.querySelector("#processing-note");
 
   if (!form || !fileInput) return;
+
+  const usesLocalBackend =
+    window.location.protocol !== "file:" &&
+    ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  const localServerMessage =
+    "This static preview cannot generate keys or process files. Run CipherForge locally with `python run.py`.";
+  if (!usesLocalBackend) {
+    previewLabel.textContent = "Static preview";
+    processingNote.textContent = "Static preview only; files stay in this browser.";
+  }
 
   let currentOperation = "encrypt";
   let currentAlgorithm = "aes-cbc";
@@ -326,8 +339,8 @@
 
   async function generateRsaKeyPair() {
     clearStatus();
-    if (window.location.protocol === "file:") {
-      updateStatus("Start CipherForge with `python run.py` before generating keys.", "error");
+    if (!usesLocalBackend) {
+      updateStatus(localServerMessage, "error");
       return;
     }
     const passphrase = rsaGenerationPassphrase.value;
@@ -403,6 +416,7 @@
     });
   });
   generateRsaKeysButton.addEventListener("click", generateRsaKeyPair);
+  submitButton.addEventListener("click", () => form.requestSubmit());
 
   document.querySelectorAll("[data-reveal]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -443,11 +457,8 @@
     clearStatus();
     clearDownload();
     if (!validateForm()) return;
-    if (window.location.protocol === "file:") {
-      updateStatus(
-        "To process a file, start CipherForge with `python run.py` and open http://127.0.0.1:5000. This static preview does not send your file anywhere.",
-        "error",
-      );
+    if (!usesLocalBackend) {
+      updateStatus(localServerMessage, "error");
       return;
     }
 
