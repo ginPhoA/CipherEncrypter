@@ -1,16 +1,14 @@
-"""Bounded reads for Werkzeug's request-scoped upload streams.
+"""Read uploads with explicit size limits.
 
-Flask/Werkzeug own and close their upload streams when a request ends. The
-application keeps cryptographic material and output bytes in memory, so it
-does not leave uploads, plaintext, or keys in the source tree or in persistent
-application storage.
+Werkzeug closes each stream when the request ends, and the app doesn't store
+files or keys between requests.
 """
 
 from werkzeug.datastructures import FileStorage
 
 
 class UploadTooLargeError(Exception):
-    """Raised when an upload exceeds its operation-specific byte limit."""
+    pass
 
 
 def read_upload_bytes(upload: FileStorage, maximum_bytes: int) -> bytes:

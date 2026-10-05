@@ -1,21 +1,20 @@
-/* Design tokens: tune the palette and sizing here rather than across components. */
 :root {
   color-scheme: light;
 
-  --color-page: #f7faf7;
-  --color-surface: #ffffff;
-  --color-surface-soft: #f2f7f1;
-  --color-surface-green: #edf7ed;
+  --color-page: #e7f0e5;
+  --color-surface: #f0f6ed;
+  --color-surface-soft: #dfeadd;
+  --color-surface-green: #d3e4d0;
   --color-ink: #183127;
-  --color-ink-soft: #52645b;
-  --color-muted: #87938c;
-  --color-line: #e3ebe3;
-  --color-line-strong: #d4e2d4;
-  --color-green: #0c6f39;
-  --color-green-deep: #176b3d;
-  --color-green-bright: #45a968;
-  --color-green-pale: #dff1e2;
-  --color-mint: #b9e7c1;
+  --color-ink-soft: #4b5f4d;
+  --color-muted: #748275;
+  --color-line: #d1dfd0;
+  --color-line-strong: #b9cfbb;
+  --color-green: #205e38;
+  --color-green-deep: #15482e;
+  --color-green-bright: #4b8657;
+  --color-green-pale: #cce1cc;
+  --color-mint: #a9cba9;
   --color-coral: #e8896d;
   --color-coral-pale: #fff2ec;
   --color-coral-ink: #a45037;
@@ -55,7 +54,7 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(ellipse at 83% 5%, rgb(208 239 213 / 37%), transparent 24rem),
+    radial-gradient(ellipse at 83% 5%, rgb(174 210 175 / 43%), transparent 24rem),
     var(--color-page);
   color: var(--color-ink);
   font-family: var(--font-body);
@@ -83,7 +82,7 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 .drop-zone:focus-within {
-  outline: 3px solid rgb(69 169 104 / 42%);
+  outline: 3px solid rgb(71 132 90 / 42%);
   outline-offset: 3px;
 }
 
@@ -191,7 +190,7 @@ input:focus-visible,
   padding: 8px 12px;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 71%);
+  background: rgb(236 245 234 / 88%);
   color: var(--color-ink-soft);
   font-size: 11px;
   font-weight: 700;
@@ -204,7 +203,7 @@ input:focus-visible,
   height: 7px;
   border-radius: 50%;
   background: var(--color-green-bright);
-  box-shadow: 0 0 0 3px rgb(69 169 104 / 13%);
+  box-shadow: 0 0 0 3px rgb(71 132 90 / 13%);
 }
 
 main {
@@ -303,10 +302,10 @@ main {
   width: 76px;
   height: 76px;
   transform: rotate(-7deg);
-  border: 1px solid rgb(255 255 255 / 76%);
+  border: 1px solid rgb(240 246 237 / 80%);
   border-radius: 25px;
-  background: linear-gradient(145deg, #ffffff, #edf8ee);
-  box-shadow: 0 15px 35px rgb(39 105 55 / 14%), inset 0 0 0 7px rgb(255 255 255 / 66%);
+  background: linear-gradient(145deg, #f0f6ed, #d3e4d0);
+  box-shadow: 0 15px 35px rgb(39 105 55 / 14%), inset 0 0 0 7px rgb(240 246 237 / 68%);
   color: var(--color-green);
   place-items: center;
 }
@@ -499,7 +498,7 @@ fieldset {
   padding: 5px;
   border: 1px solid #eaf0e9;
   border-radius: 13px;
-  background: #f6f8f5;
+  background: var(--color-surface-soft);
 }
 
 .operation-button {
@@ -529,7 +528,7 @@ fieldset {
 
 .operation-button.is-selected {
   border-color: #e2ebe2;
-  background: white;
+  background: var(--color-surface);
   box-shadow: 0 2px 5px rgb(27 58 37 / 5%);
   color: var(--color-green-deep);
   font-weight: 700;
@@ -555,7 +554,7 @@ fieldset {
   padding: 12px 13px;
   border: 1px solid var(--color-line);
   border-radius: 13px;
-  background: white;
+  background: var(--color-surface);
   transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
@@ -565,13 +564,8 @@ label.algorithm-card {
 
 .algorithm-card.is-selected {
   border-color: #88bd91;
-  background: linear-gradient(110deg, #f7fcf6, #ffffff 75%);
+  background: linear-gradient(110deg, #e2eee0, var(--color-surface) 75%);
   box-shadow: inset 0 0 0 1px rgb(87 155 99 / 8%);
-}
-
-.algorithm-card.is-disabled {
-  background: #fbfcfb;
-  color: #9da8a0;
 }
 
 .algorithm-icon {
@@ -594,8 +588,8 @@ label.algorithm-card {
 }
 
 .algorithm-icon-rsa {
-  background: #f1f2f0;
-  color: #96a19a;
+  background: #edf4ee;
+  color: #5a8d64;
 }
 
 .algorithm-copy {
@@ -641,13 +635,6 @@ label.algorithm-card {
   box-shadow: none;
 }
 
-.planned-state {
-  padding: 3px 5px;
-  border-radius: 4px;
-  background: #f1f3f0;
-  color: #919d94;
-}
-
 .algorithm-radio {
   position: absolute;
   right: 11px;
@@ -660,11 +647,11 @@ label.algorithm-card {
 
 .algorithm-card.is-selected .algorithm-radio {
   border: 4px solid var(--color-green);
-  background: white;
+  background: var(--color-surface);
 }
 
 .algorithm-card input:focus-visible + .algorithm-icon {
-  outline: 3px solid rgb(69 169 104 / 42%);
+  outline: 3px solid rgb(71 132 90 / 42%);
   outline-offset: 3px;
 }
 
@@ -712,7 +699,7 @@ label.algorithm-card {
   padding: 13px 16px;
   border: 1.5px dashed #bdd6c0;
   border-radius: 13px;
-  background: linear-gradient(105deg, #fbfefb, #f8fcf7);
+  background: linear-gradient(105deg, #e9f2e7, #deebdd);
   cursor: pointer;
   transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
 }
@@ -721,7 +708,7 @@ label.algorithm-card {
 .drop-zone.is-dragging {
   transform: translateY(-1px);
   border-color: var(--color-green-bright);
-  background: #f1faf2;
+  background: #d9ead9;
 }
 
 .upload-icon {
@@ -778,7 +765,7 @@ label.algorithm-card {
   padding: 9px 12px;
   border: 1px solid #dfeae0;
   border-radius: 12px;
-  background: #fbfdfb;
+  background: #e4eee2;
 }
 
 .selected-file[hidden],
@@ -792,7 +779,7 @@ label.algorithm-card {
   height: 36px;
   flex: 0 0 36px;
   border-radius: 10px;
-  background: #ecf6ed;
+  background: #d9e9d8;
   color: var(--color-green);
   place-items: center;
 }
@@ -850,13 +837,13 @@ label.algorithm-card {
   align-items: center;
   border: 1px solid #dfe8df;
   border-radius: 11px;
-  background: white;
+  background: var(--color-surface);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .password-input-wrap:focus-within {
   border-color: #8bbd94;
-  box-shadow: 0 0 0 3px rgb(69 169 104 / 10%);
+  box-shadow: 0 0 0 3px rgb(71 132 90 / 10%);
 }
 
 .password-icon {
@@ -929,6 +916,102 @@ label.algorithm-card {
   display: none;
 }
 
+.rsa-key-block[hidden],
+.rsa-mode[hidden] {
+  display: none;
+}
+
+.key-file-input,
+.rsa-generator input,
+.rsa-passphrase-label + input {
+  width: 100%;
+  border: 1px solid #dfe8df;
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 10px;
+}
+
+.key-file-input {
+  min-height: 45px;
+  padding: 10px;
+  border-radius: 11px;
+  color: #526157;
+}
+
+.key-file-input:focus-visible,
+.rsa-generator input:focus-visible,
+.rsa-passphrase-label + input:focus-visible {
+  outline: 3px solid rgb(71 132 90 / 18%);
+  outline-offset: 1px;
+}
+
+.rsa-generator {
+  display: grid;
+  gap: 8px;
+  margin-top: 13px;
+  padding: 13px;
+  border: 1px solid #dfeae0;
+  border-radius: 12px;
+  background: #e4eee2;
+}
+
+.rsa-generator .field-heading {
+  margin-bottom: 0;
+}
+
+.rsa-generator input,
+.rsa-passphrase-label + input {
+  min-height: 39px;
+  padding: 0 11px;
+  border-radius: 9px;
+  color: var(--color-ink);
+}
+
+.secondary-button {
+  min-height: 38px;
+  justify-self: start;
+  padding: 0 12px;
+  border: 1px solid #a9caaf;
+  border-radius: 9px;
+  background: #deecdc;
+  color: #347344;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.secondary-button:hover {
+  border-color: #7bac84;
+  background: #d2e3d0;
+}
+
+.secondary-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.rsa-passphrase-label {
+  margin-top: 13px;
+}
+
+.rsa-passphrase-label span {
+  margin-left: 5px;
+  color: #98a49b;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+}
+
+.rsa-limit-note {
+  margin: 13px 0 0;
+  padding: 9px 10px;
+  border: 1px solid #f0dfb9;
+  border-radius: 9px;
+  background: #fffaf0;
+  color: #7d6840;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
 .form-footer {
   display: flex;
   align-items: center;
@@ -947,7 +1030,7 @@ label.algorithm-card {
   padding: 0 17px;
   border: 1px solid var(--color-green);
   border-radius: 11px;
-  background: linear-gradient(110deg, var(--color-green), #2b9257);
+  background: linear-gradient(110deg, var(--color-green), #34754c);
   box-shadow: 0 5px 12px rgb(35 131 78 / 17%);
   color: white;
   cursor: pointer;
@@ -995,7 +1078,7 @@ label.algorithm-card {
   padding: 11px 13px;
   border: 1px solid #d9e9db;
   border-radius: 10px;
-  background: #f1f9f2;
+  background: #deecdc;
   color: #356143;
   font-size: 11px;
   line-height: 1.5;
@@ -1016,7 +1099,7 @@ label.algorithm-card {
   padding: 9px 12px;
   border: 1px solid #cce3d0;
   border-radius: 12px;
-  background: #f3faf4;
+  background: #e2eee1;
   color: var(--color-green-deep);
   text-decoration: none;
   transition: background var(--transition-fast), border-color var(--transition-fast);
@@ -1024,7 +1107,7 @@ label.algorithm-card {
 
 .download-result:hover {
   border-color: #9dccaa;
-  background: #edf8ef;
+  background: #d7e8d6;
 }
 
 .download-result[hidden] {
@@ -1086,7 +1169,7 @@ label.algorithm-card {
   position: relative;
   background:
     radial-gradient(circle at 96% 8%, rgb(203 236 208 / 57%), transparent 10rem),
-    linear-gradient(150deg, #ffffff, #f5fbf5);
+    linear-gradient(150deg, #f0f6ed, #e1ede0);
 }
 
 .aside-topline,
@@ -1136,7 +1219,7 @@ label.algorithm-card {
   padding: 14px 11px 11px;
   border: 1px solid #e4eee4;
   border-radius: 12px;
-  background: rgb(255 255 255 / 74%);
+  background: rgb(236 245 234 / 90%);
 }
 
 .transform-item {
@@ -1159,7 +1242,7 @@ label.algorithm-card {
 }
 
 .file-transform {
-  background: #f0f4ee;
+  background: #e2ebe0;
   color: #72877a;
 }
 
@@ -1237,7 +1320,7 @@ label.algorithm-card {
   flex: 0 0 31px;
   border: 1px solid #e4ebe4;
   border-radius: 10px;
-  background: #f9fbf9;
+  background: #e6efe3;
   color: #9ca89f;
   font-size: 8px;
   font-weight: 800;
@@ -1247,7 +1330,7 @@ label.algorithm-card {
 
 .process-item.is-active .process-number {
   border-color: #c8e3cd;
-  background: #edf8ee;
+  background: #d7e8d6;
   color: var(--color-green);
 }
 
@@ -1294,7 +1377,7 @@ label.algorithm-card {
   flex: 0 0 34px;
   border: 1px solid #e3ece3;
   border-radius: 11px;
-  background: #f3f8f3;
+  background: #e0ebe0;
   color: var(--color-green);
   font-size: 15px;
   place-items: center;

@@ -2,9 +2,8 @@
 
 ## Repository status
 
-The interactive frontend and local Flask AES-CBC workflow are implemented.
-The next algorithm milestone is **Day 2: RSA**. The substitution cipher and
-public hosting remain later work.
+The interactive frontend and local Flask workflows for AES-CBC and direct RSA
+are implemented. The substitution cipher and public hosting remain later work.
 
 The development configuration provides a repeatable local setup, test
 configuration, linting rules, and safeguards against committing cryptographic
@@ -136,10 +135,31 @@ Recommended MVP design:
 - Encrypt with the public key.
 - Decrypt with the matching private key.
 - Export keys as PEM files.
-- Protect exported private keys with a user-provided passphrase if this can be completed within the time limit.
+- Optionally protect exported private keys with a user-provided passphrase.
 - Apply a strict plaintext size limit because direct RSA cannot encrypt arbitrary-sized files.
 
+CipherForge generates and imports **RSA-2048** keys with public exponent
+65537 only. Imported keys with another size, another key type, or a different
+public exponent are rejected. The application uses the actual accepted key
+size and the OAEP hash length to derive the maximum plaintext length:
+`ceil(key_size / 8) - (2 * SHA-256_digest_length) - 2`. For RSA-2048 with
+SHA-256 this is **190 bytes**.
+
+Generated public keys are PEM SubjectPublicKeyInfo files. Generated private
+keys are PKCS#8 PEM files: when a non-empty passphrase is supplied, the
+application uses `BestAvailableEncryption`; otherwise it uses `NoEncryption`.
+Both forms can be imported. An encrypted private key requires its passphrase
+to decrypt; an unencrypted key does not.
+
 The interface should clearly state that the direct RSA option is intended for small demonstration files. The backend must reject data that is too large rather than silently truncating or attempting unsafe chunking.
+
+RSA ciphertext is returned in a versioned UTF-8 JSON `.rsaenc` envelope. The
+envelope records the fixed algorithm identifier, key size, sanitized original
+filename, MIME type, and Base64-encoded RSA ciphertext. Filename and MIME
+metadata are not encrypted or authenticated by direct RSA; they are strictly
+validated and the filename is sanitized again before download. The encrypted
+download uses `<filename-stem>.encrypt.rsaenc`; a recovered file uses
+`<original-stem>.decrypt<extension>`.
 
 If the project later needs to support larger files under an RSA-labelled workflow, the next design should be a hybrid envelope: AES encrypts the file and RSA encrypts the AES key. That is a future enhancement and should not be confused with direct RSA encryption in the first release.
 
@@ -249,9 +269,9 @@ Example response shape:
     {
       "id": "rsa",
       "label": "RSA",
-      "status": "planned",
-      "supports": [],
-      "educational_warning": "Direct RSA is not available yet."
+      "status": "active",
+      "supports": ["rsa-2048-oaep-small-files"],
+      "educational_warning": "Direct RSA is for very small demonstration files only. RSA-2048 with OAEP-SHA256 accepts at most 190 bytes."
     }
   ]
 }
@@ -263,12 +283,15 @@ Generates an RSA key pair for local demonstration use.
 
 Request fields:
 
-- `key_size`: server-controlled or restricted to approved values.
-- `passphrase`: used to protect the private-key export if passphrase protection is implemented.
+- `key_size`: optional; if supplied, it must be `2048`.
+- `passphrase`: optional non-empty passphrase used to protect the private-key export.
+- `passphrase_confirmation`: matches `passphrase` when a passphrase is used.
 
 Response behavior:
 
-- Provide downloadable public and private key files.
+- Return an in-memory ZIP download named `cipherforge-rsa-2048-key-pair.zip`.
+  It contains `cipherforge-rsa-2048-public.pem` and
+  `cipherforge-rsa-2048-private.pem`.
 - Do not write private keys to the repository.
 - Do not log key contents or passphrases.
 
@@ -277,13 +300,17 @@ Response behavior:
 Multipart form fields:
 
 - `file`: source file.
-- `algorithm`: `aes-cbc` (RSA is planned for Day 2).
+- `algorithm`: `aes-cbc` or `rsa`.
 - `password`: required for AES-CBC.
 - `password_confirmation`: required by the frontend for AES-CBC encryption.
+- `rsa_public_key`: required for RSA encryption; an RSA-2048 public PEM with
+  public exponent 65537.
 
 Success behavior:
 
-- Return the encrypted file as an attachment named `<filename-stem>.encrypt.aescbc`.
+- AES-CBC returns `<filename-stem>.encrypt.aescbc`.
+- RSA returns `<filename-stem>.encrypt.rsaenc`. RSA plaintext must not exceed
+  the OAEP limit derived from the accepted RSA-2048 key (190 bytes today).
 - Do not include plaintext, passwords, or private keys in the response body or logs.
 
 ### `POST /api/decrypt`
@@ -291,13 +318,19 @@ Success behavior:
 Multipart form fields:
 
 - `file`: encrypted input file.
-- `algorithm`: `aes-cbc`.
+- `algorithm`: `aes-cbc` or `rsa`.
 - `password`: required for AES-CBC.
+- `rsa_private_key`: required for RSA decryption; the matching RSA-2048 private
+  PEM.
+- `rsa_passphrase`: optional; required only when the imported private PEM is
+  encrypted.
 
 Success behavior:
 
 - Return the recovered file as an attachment named `<original-stem>.decrypt<extension>`.
 - Restore the original filename only after sanitizing it and preventing path traversal.
+- RSA malformed envelopes, wrong private keys, and incorrect private-key
+  passphrases all return the same generic decryption error.
 
 ### Error response shape
 
@@ -314,7 +347,7 @@ All validation and operation errors should use a consistent JSON shape, for exam
 
 Authentication failures, incorrect passwords, malformed packages, and wrong RSA keys should return a generic decryption error without exposing sensitive diagnostic details.
 
-## Day 1 project structure
+## Project structure
 
 ```text
 CipherForge/
@@ -330,6 +363,7 @@ CipherForge/
 │   ├── storage.py
 │   └── services/
 │       └── aes_cbc_service.py
+│       └── rsa_service.py
 ├── templates/
 │   └── index.html
 ├── static/
@@ -353,7 +387,8 @@ files or retain passcodes.
 
 - Bind the local server to `127.0.0.1`, not all network interfaces.
 - Limit source files to 20 MiB and allow request overhead for the Base64-encoded `.aescbc` package during decryption.
-- Enforce a much smaller RSA-specific plaintext limit based on the configured key and OAEP hash.
+- Enforce the RSA-specific plaintext limit from the actual accepted key size
+  and OAEP hash (190 bytes for the RSA-2048/SHA-256 configuration).
 - Sanitize filenames and never treat an uploaded filename as a filesystem path.
 - Reject empty files if the selected operation cannot meaningfully process them.
 - Validate RSA key type, serialization, key size, and passphrase before processing.
@@ -376,12 +411,16 @@ files or retain passcodes.
 - Implement AES-CBC encryption, PBKDF2 key derivation, PKCS7 padding, and HMAC verification.
 - Add the AES-CBC API route and service tests.
 
-### Day 2: RSA workflow
+### Day 2: RSA workflow — complete
 
-- Add RSA key-pair generation and PEM import/export.
-- Implement RSA-OAEP encryption and decryption with a strict size limit.
-- Connect RSA key controls to the frontend.
-- Add RSA service and route tests, including wrong-key and oversized-file cases.
+- RSA-2048 key-pair generation, ZIP export, PEM import, and optional
+  passphrase-protected PKCS#8 private PEMs.
+- RSA-OAEP encryption and decryption with MGF1-SHA256, SHA-256, and a strict
+  190-byte direct-RSA limit.
+- RSA frontend controls for generated/imported public keys, private keys, and
+  optional private-key passphrases.
+- RSA service and route tests for PEM round trips, text/binary files, wrong
+  keys, malformed input, and oversized files.
 
 ### Day 3: polish and demonstration readiness
 
@@ -392,7 +431,9 @@ files or retain passcodes.
 - Document local setup and a short demonstration script.
 - Prepare screenshots or a short local demo recording for future portfolio use.
 
-If time is limited, visual polish and passphrase-protected RSA private-key export can be secondary tasks. The core success criterion is a reliable local encrypt/decrypt round trip for RSA and AES-CBC, with the educational warning always visible.
+The core success criterion is a reliable local encrypt/decrypt round trip for
+RSA and AES-CBC, with the educational warning always visible. Direct RSA
+remains a small-file learning feature, not a production file-encryption design.
 
 ## Testing checklist
 
@@ -406,6 +447,8 @@ If time is limited, visual polish and passphrase-protected RSA private-key expor
 - Reject a wrong private key.
 - Reject malformed RSA-encrypted input.
 - Confirm that private keys, plaintext, and passphrases are absent from logs.
+- Confirm the generated private PEM loads with its optional passphrase and that
+  the generated ZIP contains both PEM files.
 
 ### AES-CBC
 
@@ -427,6 +470,19 @@ If time is limited, visual polish and passphrase-protected RSA private-key expor
 - Confirm that temporary files are removed after success and failure.
 - Confirm that the server is reachable only through the intended local address.
 - Confirm that the educational disclaimer is visible before file selection.
+
+## Implemented RSA behavior and limits
+
+- Generate only RSA-2048 keys with exponent 65537; import only that same RSA
+  configuration from PEM.
+- Encrypt with RSA-OAEP using MGF1-SHA256 and SHA-256, and decrypt only with
+  the matching private key.
+- Enforce a 190-byte plaintext maximum for direct RSA. No truncation,
+  chunking, or fallback/hybrid algorithm is performed.
+- Keep source files, ciphertext, generated keys, imported keys, and
+  passphrases in request memory only. CipherForge does not persist or log them.
+- Use `.rsaenc` only for the small JSON envelope described above. It exposes
+  filename and MIME metadata, so use non-sensitive demonstration files.
 
 ## Future substitution-cipher phase
 
