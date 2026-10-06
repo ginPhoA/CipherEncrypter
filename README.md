@@ -1,15 +1,9 @@
 # CipherForge
 
-CipherForge is an educational website for trying file encryption with AES-CBC
-or RSA. Encryption and decryption run in your browser, so the GitHub Pages
-version works without a Python server. You can also run the project locally.
-
 > **For education only.** CipherForge is a learning demo, not secure file
 > storage. Use sample files only; never use confidential, sensitive, or
 > irreplaceable files. The app has no professional key management, identity
 > verification, user authentication, or cloud storage.
-
-Access link: https://ginphoa.github.io/CipherEncrypter/
 
 ## What it does
 
